@@ -32,16 +32,19 @@ export class GameScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.scale;
+        const deskX = 170;
+        const deskY = 270;
 
-        // 1. Habitación de fondo
+        // 1. Habitación de fondo HD 1200x600
         this.add.image(width / 2, height / 2, 'room_bg');
 
         // 2. Estaciones interactivas
         this.createStations();
 
         // 3. Crear personaje principal Pam
-        this.pam = new Pam(this, 135, 280);
-        this.pam.sitAtDesk(); // Inicia sentada trabajando
+        this.pam = new Pam(this, deskX, deskY + 10);
+        this.pam.setDepth(6);
+        this.pam.sitAtDesk(deskX, deskY); // Inicia sentada trabajando
 
         // 4. Crear gatos según configuración
         this.cats = [];
@@ -57,10 +60,22 @@ export class GameScene extends Phaser.Scene {
             D: Phaser.Input.Keyboard.KeyCodes.D
         });
 
-        // 6. Clic en el suelo para mover a Pam
+        // Controles de pausa (ESC o tecla P)
+        this.escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+        this.escKey.on('down', () => this.pauseGame());
+        this.pKey.on('down', () => this.pauseGame());
+
+        // 6. Control táctil moderno: toque o arrastre continuo por el suelo
         this.input.on('pointerdown', (pointer, gameObjects) => {
-            // Solo si no hizo clic sobre un objeto interactuable o gato
             if (gameObjects.length === 0 && pointer.y > 220) {
+                this.spawnTouchRipple(pointer.x, pointer.y);
+                this.pam.setDestination(pointer.x, pointer.y);
+            }
+        });
+
+        this.input.on('pointermove', (pointer) => {
+            if (pointer.isDown && pointer.y > 220) {
                 this.pam.setDestination(pointer.x, pointer.y);
             }
         });
@@ -73,80 +88,142 @@ export class GameScene extends Phaser.Scene {
         this.keyboardEventTimer = Phaser.Math.Between(15, 25);
     }
 
-    createStations() {
-        // Escritorio de trabajo
-        this.desk = this.add.image(135, 270, 'desk').setInteractive({ useHandCursor: true });
-        this.deskPrompt = this.add.text(135, 195, '💻 Escribir Tesis', {
-            fontFamily: 'Outfit, sans-serif',
-            fontSize: '12px',
-            backgroundColor: '#00000088',
-            padding: { x: 6, y: 3 },
-            fill: '#ffffff'
-        }).setOrigin(0.5);
+    spawnTouchRipple(x, y) {
+        const ring = this.add.circle(x, y, 6, 0xffffff, 0);
+        ring.setStrokeStyle(3, 0x64ffda, 0.9);
+        ring.setDepth(999);
 
-        this.desk.on('pointerdown', () => {
-            if (this.catOnDesk) {
-                // Espantar gato del teclado
-                this.shooCatFromDesk();
-            } else {
-                this.pam.setDestination(135, 280, () => {
-                    this.pam.sitAtDesk();
-                });
-            }
+        const innerDot = this.add.circle(x, y, 3, 0x64ffda, 0.8);
+        innerDot.setDepth(999);
+
+        this.tweens.add({
+            targets: ring,
+            radius: 28,
+            alpha: 0,
+            duration: 400,
+            ease: 'Cubic.easeOut',
+            onComplete: () => ring.destroy()
         });
 
-        // Estación 1: Comida (Plato y croquetas)
-        this.foodStation = this.add.image(850, 480, 'station_food').setInteractive({ useHandCursor: true });
-        this.add.text(850, 435, '🍗 Servir Comida', {
-            fontFamily: 'Outfit, sans-serif',
-            fontSize: '12px',
-            backgroundColor: '#00000088',
-            padding: { x: 6, y: 3 },
-            fill: '#ffffff'
-        }).setOrigin(0.5);
-
-        this.foodStation.on('pointerdown', () => {
-            this.pam.setDestination(810, 480, () => {
-                this.pam.setCarriedItem('food');
-            });
-        });
-
-        // Estación 2: Arenero
-        this.litterStation = this.add.image(850, 310, 'station_litter').setInteractive({ useHandCursor: true });
-        this.add.text(850, 265, '🚽 Limpiar Arenero', {
-            fontFamily: 'Outfit, sans-serif',
-            fontSize: '12px',
-            backgroundColor: '#00000088',
-            padding: { x: 6, y: 3 },
-            fill: '#ffffff'
-        }).setOrigin(0.5);
-
-        this.litterStation.on('pointerdown', () => {
-            this.pam.setDestination(810, 310, () => {
-                this.pam.setCarriedItem('litter');
-            });
-        });
-
-        // Estación 3: Cesta de Juguetes / Estambre
-        this.toyStation = this.add.image(320, 540, 'station_toy').setInteractive({ useHandCursor: true });
-        this.add.text(320, 500, '🧶 Juguete / Estambre', {
-            fontFamily: 'Outfit, sans-serif',
-            fontSize: '12px',
-            backgroundColor: '#00000088',
-            padding: { x: 6, y: 3 },
-            fill: '#ffffff'
-        }).setOrigin(0.5);
-
-        this.toyStation.on('pointerdown', () => {
-            this.pam.setDestination(320, 510, () => {
-                this.pam.setCarriedItem('play');
-            });
+        this.tweens.add({
+            targets: innerDot,
+            scale: 0,
+            alpha: 0,
+            duration: 300,
+            ease: 'Quad.easeOut',
+            onComplete: () => innerDot.destroy()
         });
     }
 
+    createStations() {
+        const deskX = 170;
+        const deskY = 270;
+        const foodX = 1070;
+        const foodY = 480;
+        const litterX = 1070;
+        const litterY = 310;
+        const toyX = 390;
+        const toyY = 530;
+
+        // Escritorio de trabajo
+        const onDeskClick = () => {
+            if (this.catOnDesk) {
+                this.shooCatFromDesk();
+            } else {
+                this.pam.setDestination(deskX, deskY + 10, () => {
+                    this.pam.sitAtDesk(deskX, deskY);
+                });
+            }
+        };
+
+        this.desk = this.add.image(deskX, deskY, 'desk').setInteractive({ useHandCursor: true });
+        this.desk.on('pointerdown', onDeskClick);
+
+        this.deskPrompt = this.add.text(deskX, deskY - 75, 'Escribir Tesis', {
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '12px',
+            fontStyle: 'bold',
+            backgroundColor: '#0f172acc',
+            padding: { x: 8, y: 5 },
+            fill: '#38bdf8'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        this.deskPrompt.on('pointerdown', onDeskClick);
+
+        // Estación 1: Comida (Plato y croquetas)
+        const onFoodClick = () => {
+            this.pam.setDestination(foodX - 40, foodY, () => {
+                this.pam.setCarriedItem('food');
+            });
+        };
+
+        this.foodStation = this.add.image(foodX, foodY, 'station_food').setInteractive({ useHandCursor: true });
+        this.foodStation.on('pointerdown', onFoodClick);
+
+        this.foodPrompt = this.add.text(foodX, foodY - 45, 'Servir Comida', {
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '12px',
+            fontStyle: 'bold',
+            backgroundColor: '#0f172acc',
+            padding: { x: 8, y: 5 },
+            fill: '#fbbf24'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        this.foodPrompt.on('pointerdown', onFoodClick);
+
+        // Estación 2: Arenero
+        const onLitterClick = () => {
+            this.pam.setDestination(litterX - 40, litterY, () => {
+                this.pam.setCarriedItem('litter');
+            });
+        };
+
+        this.litterStation = this.add.image(litterX, litterY, 'station_litter').setInteractive({ useHandCursor: true });
+        this.litterStation.on('pointerdown', onLitterClick);
+
+        this.litterPrompt = this.add.text(litterX, litterY - 45, 'Limpiar Arenero', {
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '12px',
+            fontStyle: 'bold',
+            backgroundColor: '#0f172acc',
+            padding: { x: 8, y: 5 },
+            fill: '#34d399'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        this.litterPrompt.on('pointerdown', onLitterClick);
+
+        // Estación 3: Cesta de Juguetes / Estambre
+        const onToyClick = () => {
+            this.pam.setDestination(toyX, toyY - 25, () => {
+                this.pam.setCarriedItem('play');
+            });
+        };
+
+        this.toyStation = this.add.image(toyX, toyY, 'station_toy').setInteractive({ useHandCursor: true });
+        this.toyStation.on('pointerdown', onToyClick);
+
+        this.toyPrompt = this.add.text(toyX, toyY - 45, 'Juguetes Michis', {
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '12px',
+            fontStyle: 'bold',
+            backgroundColor: '#0f172acc',
+            padding: { x: 8, y: 5 },
+            fill: '#f472b6'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        this.toyPrompt.on('pointerdown', onToyClick);
+    }
+
     spawnCats() {
+        const { width } = this.scale;
+        const centerX = width / 2;
+        const offsets = [
+            { x: -70, y: -25 },
+            { x: 60, y: 25 },
+            { x: 170, y: -30 },
+            { x: -160, y: 35 },
+            { x: 90, y: 65 }
+        ];
         GameConfig.cats.forEach((catCfg, index) => {
             const cat = new Cat(this, catCfg);
+            const off = offsets[index % offsets.length];
+            cat.setPosition(centerX + off.x, 390 + off.y);
             cat.isActive = index < this.activeCatsCount;
             cat.setVisible(cat.isActive);
             this.cats.push(cat);
@@ -189,8 +266,10 @@ export class GameScene extends Phaser.Scene {
             this.thesisProgress = Math.max(0, this.thesisProgress - GameConfig.events.keyboardPenaltyPerSec * deltaSec);
         }
 
-        // 3. Actualizar Pam y Gatos
-        this.pam.update(deltaSec, this.cursors, this.wasd);
+        // 3. Actualizar Pam y Gatos con soporte de controles táctiles DPad
+        const uiScene = this.scene.get('UIScene');
+        const touchInput = (uiScene && typeof uiScene.getTouchInput === 'function') ? uiScene.getTouchInput() : {};
+        this.pam.update(deltaSec, this.cursors, this.wasd, touchInput);
 
         this.cats.forEach(cat => {
             cat.update(deltaSec, currentChapter.decayMultiplier);
@@ -382,5 +461,20 @@ export class GameScene extends Phaser.Scene {
 
         this.scene.stop('UIScene');
         this.scene.start('GameOverScene', payload);
+    }
+
+    pauseGame() {
+        if (this.isGameOver) return;
+        const currentChapter = GameConfig.thesis.chapters[this.currentChapterIndex] || GameConfig.thesis.chapters[0];
+        this.scene.pause('GameScene');
+        this.scene.pause('UIScene');
+        this.scene.launch('PauseScene', {
+            playerName: this.playerName,
+            thesisProgress: this.thesisProgress,
+            currentChapter: currentChapter,
+            elapsedTime: this.elapsedTime,
+            sessionStats: this.sessionStats,
+            totalCatsAttended: this.totalCatsAttended
+        });
     }
 }

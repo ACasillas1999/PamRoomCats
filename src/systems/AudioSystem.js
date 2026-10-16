@@ -17,6 +17,56 @@ class SoundManager {
         }
     }
 
+    // Sonido sutil y nítido de hover en botones de la interfaz
+    playHover() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const now = this.ctx.currentTime;
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.exponentialRampToValueAtTime(1320, now + 0.04);
+
+            gain.gain.setValueAtTime(0.045, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.05);
+        } catch (e) {}
+    }
+
+    // Sonido de clic responsivo al interactuar con botones
+    playClick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            const now = this.ctx.currentTime;
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.exponentialRampToValueAtTime(260, now + 0.05);
+
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.055);
+        } catch (e) {}
+    }
+
     // Sonido de tecleo de Pam en la laptop
     playType() {
         if (!this.enabled || !this.ctx) return;
@@ -223,3 +273,6 @@ class SoundManager {
 }
 
 export const AudioSys = new SoundManager();
+if (typeof window !== 'undefined') {
+    window.AudioSys = AudioSys;
+}

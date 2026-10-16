@@ -1,6 +1,6 @@
 // src/config.js - Configuración general y constantes de balance
 export const GameConfig = {
-    width: 960,
+    width: 1200,
     height: 600,
     pamSpeed: 175,
     

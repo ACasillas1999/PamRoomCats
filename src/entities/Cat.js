@@ -59,9 +59,10 @@ export class Cat extends Phaser.GameObjects.Container {
         this.bubbleContainer.setVisible(false);
         this.add(this.bubbleContainer);
 
-        // Hacer al gato interactuable por clic
-        this.setSize(48, 36);
-        this.setInteractive({ useHandCursor: true });
+        // Hacer al gato interactuable por clic o toque en móvil (cubre cuerpo y burbuja)
+        const hitArea = new Phaser.Geom.Rectangle(-32, -56, 64, 76);
+        this.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
+        this.input.cursor = 'pointer';
         this.on('pointerdown', () => {
             this.scene.events.emit('catClicked', this);
         });
@@ -104,8 +105,10 @@ export class Cat extends Phaser.GameObjects.Container {
             this.wanderTimer -= deltaSec;
             if (this.wanderTimer <= 0) {
                 // Nuevo punto de vagabundeo cerca de la alfombra central
-                this.targetX = Phaser.Math.Between(260, 720);
-                this.targetY = Phaser.Math.Between(290, 480);
+                const centerX = (this.scene && this.scene.scale && this.scene.scale.width) ? this.scene.scale.width / 2 : 480;
+                const spread = Math.min(240, centerX * 0.45);
+                this.targetX = Phaser.Math.Between(centerX - spread, centerX + spread);
+                this.targetY = Phaser.Math.Between(290, 490);
                 this.wanderTimer = Phaser.Math.Between(3, 8);
             }
 

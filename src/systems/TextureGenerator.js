@@ -1,7 +1,7 @@
 // src/systems/TextureGenerator.js - Generador procedural de texturas pixel art para Phaser
 export function generateGameTextures(scene) {
     const createPixelCanvas = (key, width, height, drawFn) => {
-        if (scene.textures.exists(key)) return;
+        if (scene.textures.exists(key) || (scene.load && scene.load.get && scene.load.get(key))) return;
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -11,8 +11,8 @@ export function generateGameTextures(scene) {
         scene.textures.addCanvas(key, canvas);
     };
 
-    // 1. Habitación acogedora de Pam (960 x 600)
-    createPixelCanvas('room_bg', 960, 600, (ctx, w, h) => {
+    // 1. Habitación acogedora de Pam panorámica moderna (1200 x 600)
+    createPixelCanvas('room_bg', 1200, 600, (ctx, w, h) => {
         // Pared superior (lila pastel suave / estética lo-fi)
         ctx.fillStyle = '#392b47';
         ctx.fillRect(0, 0, w, 220);
@@ -46,7 +46,7 @@ export function generateGameTextures(scene) {
         // Gran alfombra redonda acogedora para gatos en el centro
         ctx.fillStyle = '#ebd3be';
         ctx.beginPath();
-        ctx.ellipse(480, 410, 200, 100, 0, 0, Math.PI * 2);
+        ctx.ellipse(600, 410, 250, 115, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#d4b79b';
         ctx.lineWidth = 6;
@@ -54,68 +54,68 @@ export function generateGameTextures(scene) {
 
         // Ventana con vista al cielo nocturno estrellado
         ctx.fillStyle = '#221631';
-        ctx.fillRect(380, 25, 200, 150);
+        ctx.fillRect(500, 25, 200, 150);
         // Estrellas
         ctx.fillStyle = '#fff9d2';
-        const stars = [[400, 45], [450, 70], [530, 40], [500, 100], [420, 120], [550, 90]];
+        const stars = [[520, 45], [570, 70], [650, 40], [620, 100], [540, 120], [670, 90]];
         stars.forEach(([sx, sy]) => {
             ctx.fillRect(sx, sy, 3, 3);
         });
         // Luna creciente
         ctx.fillStyle = '#ffef9f';
         ctx.beginPath();
-        ctx.arc(520, 65, 22, 0, Math.PI * 2);
+        ctx.arc(640, 65, 22, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#221631';
         ctx.beginPath();
-        ctx.arc(528, 62, 19, 0, Math.PI * 2);
+        ctx.arc(648, 62, 19, 0, Math.PI * 2);
         ctx.fill();
 
         // Marco de la ventana y cortinas
         ctx.strokeStyle = '#f8e4d9';
         ctx.lineWidth = 6;
-        ctx.strokeRect(380, 25, 200, 150);
+        ctx.strokeRect(500, 25, 200, 150);
         // Cruz de la ventana
         ctx.beginPath();
-        ctx.moveTo(480, 25);
-        ctx.lineTo(480, 175);
-        ctx.moveTo(380, 100);
-        ctx.lineTo(580, 100);
+        ctx.moveTo(600, 25);
+        ctx.lineTo(600, 175);
+        ctx.moveTo(500, 100);
+        ctx.lineTo(700, 100);
         ctx.stroke();
 
         // Cortinas rosas suaves
         ctx.fillStyle = '#f09bb0';
-        ctx.fillRect(365, 20, 25, 160);
-        ctx.fillRect(570, 20, 25, 160);
+        ctx.fillRect(485, 20, 25, 160);
+        ctx.fillRect(690, 20, 25, 160);
 
         // Estantería de libros en la pared izquierda
         ctx.fillStyle = '#7a5135';
-        ctx.fillRect(60, 50, 180, 16);
-        ctx.fillRect(60, 120, 180, 16);
+        ctx.fillRect(180, 50, 220, 16);
+        ctx.fillRect(180, 120, 220, 16);
         // Libros coloridos
         const bookColors = ['#f44336', '#4caf50', '#2196f3', '#ffeb3b', '#9c27b0', '#ff9800'];
-        for (let b = 0; b < 10; b++) {
+        for (let b = 0; b < 12; b++) {
             ctx.fillStyle = bookColors[b % bookColors.length];
-            ctx.fillRect(75 + b * 15, 66 - (b % 3) * 6, 12, 54 + (b % 3) * 6);
+            ctx.fillRect(195 + b * 16, 66 - (b % 3) * 6, 13, 54 + (b % 3) * 6);
         }
-        for (let b = 0; b < 8; b++) {
+        for (let b = 0; b < 10; b++) {
             ctx.fillStyle = bookColors[(b + 2) % bookColors.length];
-            ctx.fillRect(75 + b * 18, 136 - (b % 2) * 8, 14, 54 + (b % 2) * 8);
+            ctx.fillRect(195 + b * 19, 136 - (b % 2) * 8, 15, 54 + (b % 2) * 8);
         }
 
         // Póster de gato en la pared derecha
         ctx.fillStyle = '#fce4ec';
-        ctx.fillRect(740, 50, 120, 130);
+        ctx.fillRect(820, 50, 120, 130);
         ctx.strokeStyle = '#8d6e63';
         ctx.lineWidth = 4;
-        ctx.strokeRect(740, 50, 120, 130);
+        ctx.strokeRect(820, 50, 120, 130);
         ctx.fillStyle = '#e91e63';
         ctx.font = 'bold 12px sans-serif';
-        ctx.fillText("KEEP CALM", 760, 80);
-        ctx.fillText("& PET CATS", 760, 100);
+        ctx.fillText("KEEP CALM", 840, 80);
+        ctx.fillText("& PET CATS", 840, 100);
         ctx.fillStyle = '#333';
         ctx.beginPath();
-        ctx.arc(800, 140, 15, 0, Math.PI * 2);
+        ctx.arc(880, 140, 15, 0, Math.PI * 2);
         ctx.fill();
     });
 
@@ -244,106 +244,8 @@ export function generateGameTextures(scene) {
         ctx.fill();
     });
 
-    // 6. Sprite de Pam (Personaje Principal) (48 x 64)
-    createPixelCanvas('pam_idle', 48, 64, (ctx) => {
-        // Sombra
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.beginPath();
-        ctx.ellipse(24, 60, 14, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Piernas / Pantalón oscuro
-        ctx.fillStyle = '#263238';
-        ctx.fillRect(18, 44, 5, 14);
-        ctx.fillRect(25, 44, 5, 14);
-
-        // Zapatos blancos cómodos
-        ctx.fillStyle = '#eceff1';
-        ctx.fillRect(17, 57, 6, 4);
-        ctx.fillRect(25, 57, 6, 4);
-
-        // Suéter cozy oversize (verde menta pastel)
-        ctx.fillStyle = '#80cbc4';
-        ctx.beginPath();
-        ctx.roundRect(14, 26, 20, 20, 4);
-        ctx.fill();
-
-        // Brazos
-        ctx.fillStyle = '#4db6ac';
-        ctx.fillRect(10, 28, 4, 14);
-        ctx.fillRect(34, 28, 4, 14);
-
-        // Cabeza y cuello
-        ctx.fillStyle = '#ffcc80'; // Tono de piel cálido
-        ctx.fillRect(21, 23, 6, 4); // Cuello
-        ctx.beginPath();
-        ctx.arc(24, 16, 10, 0, Math.PI * 2); // Cara
-        ctx.fill();
-
-        // Pelo castaño con chongo / cola de caballo de estudiante
-        ctx.fillStyle = '#4e342e';
-        ctx.beginPath();
-        ctx.arc(24, 13, 11, Math.PI, 0, true);
-        ctx.fill();
-        // Chongo despeinado arriba
-        ctx.beginPath();
-        ctx.arc(24, 4, 6, 0, Math.PI * 2);
-        ctx.fill();
-        // Mechones laterales
-        ctx.fillRect(13, 13, 4, 12);
-        ctx.fillRect(31, 13, 4, 12);
-
-        // Lentes y ojos
-        ctx.strokeStyle = '#37474f';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(17, 14, 5, 4);
-        ctx.strokeRect(26, 14, 5, 4);
-        ctx.beginPath();
-        ctx.moveTo(22, 16);
-        ctx.lineTo(26, 16);
-        ctx.stroke();
-    });
-
-    // Pam escribiendo en el escritorio (48 x 64)
-    createPixelCanvas('pam_typing', 48, 64, (ctx) => {
-        // Piernas / Pantalón
-        ctx.fillStyle = '#263238';
-        ctx.fillRect(18, 42, 12, 14);
-
-        // Suéter
-        ctx.fillStyle = '#80cbc4';
-        ctx.beginPath();
-        ctx.roundRect(14, 26, 20, 18, 4);
-        ctx.fill();
-
-        // Brazos extendidos hacia adelante tecleando
-        ctx.fillStyle = '#4db6ac';
-        ctx.fillRect(14, 30, 18, 5);
-
-        // Manos
-        ctx.fillStyle = '#ffcc80';
-        ctx.fillRect(32, 29, 6, 6);
-
-        // Cabeza inclinada concentrada
-        ctx.fillStyle = '#ffcc80';
-        ctx.beginPath();
-        ctx.arc(24, 16, 10, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Cabello y lentes
-        ctx.fillStyle = '#4e342e';
-        ctx.beginPath();
-        ctx.arc(24, 13, 11, Math.PI, 0, true);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(24, 4, 6, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = '#37474f';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(20, 14, 5, 4);
-        ctx.strokeRect(28, 14, 5, 4);
-    });
+    // 6. Los sprites oficiales de Pam ('pam_idle', 'pam_typing', 'pam_typing_alt')
+    // se cargan directamente como assets PNG en BootScene.js para máxima fidelidad visual.
 
     // 7. Sprites de los 4 Gatos (40 x 32)
     const catPalettes = {
@@ -499,5 +401,97 @@ export function generateGameTextures(scene) {
     createPixelCanvas('icon_keyboard', 24, 24, (ctx) => {
         ctx.font = '16px "Segoe UI Emoji", sans-serif';
         ctx.fillText('⌨️', 3, 18);
+    });
+
+    // 9. Íconos vectoriales profesionales para controles HUD (sin emojis)
+    createPixelCanvas('ui_icon_pause', 36, 36, (ctx) => {
+        ctx.fillStyle = '#ffffff';
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(11, 9, 4.5, 18, 2);
+            ctx.roundRect(20.5, 9, 4.5, 18, 2);
+            ctx.fill();
+        } else {
+            ctx.fillRect(11, 9, 4.5, 18);
+            ctx.fillRect(20.5, 9, 4.5, 18);
+        }
+    });
+
+    createPixelCanvas('ui_icon_sound_on', 36, 36, (ctx) => {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(8, 14);
+        ctx.lineTo(13, 14);
+        ctx.lineTo(19, 9);
+        ctx.lineTo(19, 27);
+        ctx.lineTo(13, 22);
+        ctx.lineTo(8, 22);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(17, 18, 6.5, -Math.PI / 4, Math.PI / 4, false);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(17, 18, 11.5, -Math.PI / 3.2, Math.PI / 3.2, false);
+        ctx.stroke();
+    });
+
+    createPixelCanvas('ui_icon_sound_off', 36, 36, (ctx) => {
+        ctx.fillStyle = '#b0bec5';
+        ctx.beginPath();
+        ctx.moveTo(8, 14);
+        ctx.lineTo(13, 14);
+        ctx.lineTo(19, 9);
+        ctx.lineTo(19, 27);
+        ctx.lineTo(13, 22);
+        ctx.lineTo(8, 22);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = '#ff5252';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(8, 28);
+        ctx.lineTo(28, 8);
+        ctx.stroke();
+    });
+
+    createPixelCanvas('ui_icon_fullscreen', 36, 36, (ctx) => {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+
+        // Superior izquierda
+        ctx.beginPath();
+        ctx.moveTo(9, 15);
+        ctx.lineTo(9, 9);
+        ctx.lineTo(15, 9);
+        ctx.stroke();
+
+        // Superior derecha
+        ctx.beginPath();
+        ctx.moveTo(21, 9);
+        ctx.lineTo(27, 9);
+        ctx.lineTo(27, 15);
+        ctx.stroke();
+
+        // Inferior izquierda
+        ctx.beginPath();
+        ctx.moveTo(9, 21);
+        ctx.lineTo(9, 27);
+        ctx.lineTo(15, 27);
+        ctx.stroke();
+
+        // Inferior derecha
+        ctx.beginPath();
+        ctx.moveTo(21, 27);
+        ctx.lineTo(27, 27);
+        ctx.lineTo(27, 21);
+        ctx.stroke();
     });
 }
